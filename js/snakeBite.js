@@ -2,7 +2,7 @@ var ctx;
 var areaX;
 var areaY;
 var areaWidth = 40;
-var snake = [], food = [];
+var snake = [], foods = [];
 var keyCode = 0;
 
 // Point class
@@ -23,69 +23,73 @@ function init() {
 
 	// initialize a snake
 	snake.push(new Point(areaX / 2, areaY / 2));
-	console.log(snake[0].x + " " + snake[0].y);
 
 	// initialize foods
 	for (var i = 0; i < 10; i++) {
-		food.push(addFood());
+		addFood();
 	}
 	timer = setInterval(tick, 200);
 	window.onkeydown = keydown;
+}
+
+function tick() {
+	x = snake[0].x;
+	y = snake[0].y;
+	switch (keyCode) {
+		case 37: // left
+			x--;
+			break;
+		case 38: // up
+			y--;
+			break;
+		case 39: // right
+			x++;
+			break;
+		case 40: // down
+			y++;
+			break;
+		default:
+			paint();
+			return;
+	}
+	snake.unshift(new Point(x, y));
+	paint();
+}
+
+function keydown(event) {
+	keyCode = event.keyCode;
+}
+
+// collision detection
+function isHit(data, x, y) {
+	console.log(data[0] + " " + x + " " + y);
+	for (var i = 0; i < data.length; i++) {
+		if (data[i].x == x && data[i].y == y) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function addFood() {
 	while(true) {
 		var x = Math.floor(areaX * Math.random());
 		var y = Math.floor(areaY * Math.random());
-		if (isHit(food, x, y) || isHit(snake, x, y)) {
+		if (isHit(foods, x, y) || isHit(snake, x, y)) {
 			continue;
 		}
-		food.push(new Point(x, y));
+		foods.push(new Point(x, y));
 		break;
 	}
 }
 
-function tick() {
-	paint();
+function moveFood(x, y) {
+	foods = foods.filter(function (i) {
+		return i.x != x || i.y != y;
+	});
+	addFood();
 }
 
-function keydown(event) {
-	x = snake[0].x;
-	y = snake[0].y;
-	switch (event.keyCode) {
-		case 37: // left
-			snake.forEach(function (i) {
-				i.x -= 1;
-			});
-			break;
-		case 38: // up
-			snake.forEach(function (i) {
-				i.y -= 1;
-			});
-			break;
-		case 39: // right
-			snake.forEach(function (i) {
-				i.x += 1;
-			});
-			break;
-		case 40: // down
-			snake.forEach(function (i) {
-				i.y += 1;
-			});
-			break;
-	}
-}
-
-// collision detection
-function isHit(data, x, y) {
-	for (var i = 0; i < data.length; i++) {
-		if (data[i].x === x && data[i].y === y) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-}
 // draw
 function paint() {
 	ctx.clearRect(0, 0, areaX * areaWidth, areaY * areaWidth);
@@ -95,7 +99,7 @@ function paint() {
 		console.log(i.x + " " + i.y);
 	});
 	ctx.fillStyle = "yellow";
-	food.forEach(function (i) {
+	foods.forEach(function (i) {
 		ctx.fillText("★", i.x * areaWidth, i.y * areaWidth);
 	});
 
