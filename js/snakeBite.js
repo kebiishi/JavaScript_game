@@ -34,10 +34,15 @@ function init() {
 }
 
 function addFood() {
-	var x = Math.floor(areaX * Math.random());
-	var y = Math.floor(areaY * Math.random());
-	var foodPos = new Point(x, y);
-	return foodPos;
+	while(true) {
+		var x = Math.floor(areaX * Math.random());
+		var y = Math.floor(areaY * Math.random());
+		if (isHit(food, x, y) || isHit(snake, x, y)) {
+			continue;
+		}
+		food.push(new Point(x, y));
+		break;
+	}
 }
 
 function tick() {
@@ -45,6 +50,8 @@ function tick() {
 }
 
 function keydown(event) {
+	x = snake[0].x;
+	y = snake[0].y;
 	switch (event.keyCode) {
 		case 37: // left
 			snake.forEach(function (i) {
@@ -69,6 +76,16 @@ function keydown(event) {
 	}
 }
 
+// collision detection
+function isHit(data, x, y) {
+	for (var i = 0; i < data.length; i++) {
+		if (data[i].x === x && data[i].y === y) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
 // draw
 function paint() {
 	ctx.clearRect(0, 0, areaX * areaWidth, areaY * areaWidth);
