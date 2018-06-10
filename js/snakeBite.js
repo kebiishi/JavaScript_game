@@ -4,6 +4,8 @@ var areaY;
 var areaWidth = 40;
 var snake = [], foods = [];
 var keyCode = 0;
+var timer;
+var score = 0;
 
 // Point class
 function Point(x, y) {
@@ -52,7 +54,20 @@ function tick() {
 			paint();
 			return;
 	}
+	if (isHit(snake, x, y)
+		|| x < 0 || areaX <= x
+		|| y < 0 || areaY <= y) {
+		clearInterval(timer);
+		paint();
+		return;
+	}
 	snake.unshift(new Point(x, y));
+	if (isHit(foods, x, y)) {
+		score += 10;
+		moveFood(x, y);
+	} else {
+		snake.pop(snake.length - 1);
+	}
 	paint();
 }
 
@@ -62,7 +77,6 @@ function keydown(event) {
 
 // collision detection
 function isHit(data, x, y) {
-	console.log(data[0] + " " + x + " " + y);
 	for (var i = 0; i < data.length; i++) {
 		if (data[i].x == x && data[i].y == y) {
 			return true;
@@ -93,14 +107,15 @@ function moveFood(x, y) {
 // draw
 function paint() {
 	ctx.clearRect(0, 0, areaX * areaWidth, areaY * areaWidth);
+	ctx.fillStyle = "red";
+	ctx.fillText(score, areaWidth, areaWidth * 2);
 	ctx.fillStyle = "green";
 	snake.forEach(function (i) {
-		ctx.fillText("●", i.x * areaWidth, i.y * areaWidth);
-		console.log(i.x + " " + i.y);
+		ctx.fillText("●", i.x * areaWidth, (i.y + 1) * areaWidth);
 	});
 	ctx.fillStyle = "yellow";
 	foods.forEach(function (i) {
-		ctx.fillText("★", i.x * areaWidth, i.y * areaWidth);
+		ctx.fillText("★", i.x * areaWidth, (i.y + 1) * areaWidth);
 	});
 
 }
