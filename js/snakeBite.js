@@ -27,7 +27,7 @@ function init() {
 	snake.push(new Point(areaX / 2, areaY / 2));
 
 	// initialize foods
-	for (var i = 0; i < 10; i++) {
+	for (var i = 0; i < 30; i++) {
 		addFood();
 	}
 	timer = setInterval(tick, 200);
