@@ -9,27 +9,32 @@ const ROW_BLOCK_NUM = 25;
 
 function init() {
 	"use strict";
-	createBoard();
+	drawBoard();
 
+	const board = document.getElementById("board");
+	const tr = board.children[0];
+	const td = tr.children[0];
+	td.style.backgroundColor = "#AA0000";
 	// interval = setInterval(draw, 700);
 }
 
 /*
  * 盤面を描画する
  */
-function createBoard() {
+function drawBoard() {
 	const board = document.getElementById("board");
 	board.style.width = BLOCK_SIZE * COL_BLOCK_NUM + "px";
 	board.style.height = BLOCK_SIZE * ROW_BLOCK_NUM + "px";
 	// 盤面のマス目を作成
 	for (let i=0; i < ROW_BLOCK_NUM; i++) {
-		board.appendChild(document.createElement("tr"));
+		let tr = document.createElement("tr");
 		for (let j=0; j < COL_BLOCK_NUM; j++) {
 			let td = document.createElement("td");
 			td.style.width = BLOCK_SIZE + "px";
 			td.style.height = BLOCK_SIZE + "px";
-			board.appendChild(td);
+			tr.appendChild(td);
 		}
+		board.appendChild(tr);
 	}
 }
 

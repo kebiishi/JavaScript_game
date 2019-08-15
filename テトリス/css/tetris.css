@@ -5,7 +5,7 @@
 	margin: 0 auto;
 }
 
-#board > td {
+#board > tr > td {
 	border: solid 1px #616161;
 	margin: 0;
 	padding: 0;
