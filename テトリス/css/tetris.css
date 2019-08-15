@@ -1,5 +1,12 @@
-#field {
-	background-color: #000000;
-	display: block;
+#board {
+	background-color: #373737;
+	/* border: solid 3px #616161; */
+	border-collapse: collapse;
 	margin: 0 auto;
+}
+
+#board > td {
+	border: solid 1px #616161;
+	margin: 0;
+	padding: 0;
 }
