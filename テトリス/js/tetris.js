@@ -77,11 +77,13 @@ function selectNewParts() {
 	const pattern = PARTS[Math.floor(Math.random() * PARTS.length)];
 	// 回転角をランダムに決定する。
 	const angle = ROTATION[Math.floor(Math.random() * ROTATION.length)];
+	// パーツの基準セルの初期位置をランダムに決定する。
+	const initCol = Math.floor(Math.random() * COL_BLOCK_NUM);
 	return {
 			pattern: pattern,
 			angle: angle,
 			row: -1,
-			col: 0
+			col: initCol
 		};
 }
 
@@ -93,19 +95,19 @@ function createNewParts(parts) {
 	return [
 		{
 			row: -1,
-			col: 0
+			col: parts.col
 		},
 		{
 			row: -1,
-			col: 1
+			col: parts.col + 1
 		},
 		{
 			row: 0,
-			col: 0
+			col: parts.col
 		},
 		{
 			row: 0,
-			col: 1
+			col: parts.col + 1
 		}
 	];
 }
@@ -139,45 +141,22 @@ function moveBlock(dir) {
 		case "down":
 			// 1行落下。
 			fallingParts.map(p => p.row++);
-			// fallingParts.row++;
-			// // ブロック配列を更新。
-			// fallingParts.forEach(e => {
-			// 	// 落下し始めはスキップ。
-			// 	if (e.row > 0) {
-			// 		blocks[e.row - 1][e.col] = 0;
-			// 	}
-			// 	blocks[e.row][e.col] = 1;
-			// });
 			break;
 		case "right":
 			// 右に移動可能な領域を制限する。
 			if (fallingParts.some(p => (p.col === COL_BLOCK_NUM - 1))) {
-			// if (fallingParts.col === COL_BLOCK_NUM - 1) {
 				return;
 			};
 			// 1列右に移動。
 			fallingParts.map(p => p.col++);
-			// fallingParts.col++;
-			// // ブロック配列を更新。
-			// fallingParts.forEach(e => {
-			// 	blocks[e.row][e.col - 1] = 0;
-			// 	blocks[e.row][e.col] = 1;
-			// });
 			break;
 		case "left":
 			// 左に移動可能な領域を制限する。
 			if (fallingParts.some(p => p.col === 0)) {
-			// if (fallingParts.col === 0) {
 				return;
 			};
 			// 1列左に移動。
 			fallingParts.map(p => p.col--);
-			// fallingParts.col--;
-			// ブロック配列を更新。
-			// fallingParts.forEach(e => {
-			// 	blocks[e.row][e.col + 1] = 0;
-			// 	blocks[e.row][e.col] = 1;
-			// });
 			break;
 		default:
 			break;
@@ -189,11 +168,6 @@ function moveBlock(dir) {
  * 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
  */
 function hasFallen() {
-	// fallingParts.forEach(e => {
-	// 	if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
-	// 		fallingParts.length = 0;
-	// 	}
-	// })
 	if (fallingParts.some(p => p.row === ROW_BLOCK_NUM - 1)) {
 		return true;
 	}
@@ -257,126 +231,3 @@ document.addEventListener("keydown", e => {
 	paintBGColor();
 }, false);
 
-// class BlockUnit {
-// 	constructor() {
-// 		this._width = blockSize;
-// 		this._height = blockSize;
-// 		// 画面の中心からスタート
-// 		this._x = this._width * (canvasWidth / this._width / 2);
-// 		this._y = 0;
-// 	}
-//
-// 	// ブロックが落下する
-// 	moveDown() {
-// 		this._y += this._height;
-// 		this.draw();
-// 	}
-//
-// 	// ブロックを右に移動
-// 	moveRight() {
-// 		// 画面の右端に到達していたらreturn
-// 		if (this._x >= canvasWidth - this._width) {
-// 			return;
-// 		}
-// 		this._x += this._width;
-// 		this.draw();
-// 	}
-//
-// 	// ブロックを左に移動
-// 	moveLeft() {
-// 		// 画面の左端に到達していたらreturn
-// 		if (this._x <= 0) {
-// 			return;
-// 		}
-// 		this._x -= this._width;
-// 		this.draw();
-// 	}
-//
-// 	// ブロックを描画
-// 	draw() {
-// 		console.log(this._x + " " + this._y);
-// 		ctx.beginPath();
-// 		ctx.rect(this._x, this._y, this._width, this._height);
-// 		ctx.fillStyle = "#0095DD";
-// 		ctx.fill();
-// 		ctx.closePath();
-// 	}
-//
-// 	get calcCellXAdress() {
-// 		return this._x / this._width;
-// 	}
-//
-// 	get calcCellYAdress() {
-// 		return this._y / this._height;
-// 	}
-//
-// 	get x() {
-// 		return this._x;
-// 	}
-// 	set x(value) {
-// 		this._x = value;
-// 	}
-//
-// 	get y() {
-// 		return this._y;
-// 	}
-// 	set y(value) {
-// 		this._y = value;
-// 	}
-//
-// 	get width() {
-// 		return this._width;
-// 	}
-//
-// 	set width(value) {
-// 		this._width = value;
-// 	}
-//
-// 	get height() {
-// 		return this._height;
-// 	}
-//
-// 	set height(value) {
-// 		this._height = value;
-// 	}
-//
-// 	get hasDropped() {
-// 		return this._hasDropped;
-// 	}
-//
-// 	set hasDropped(value) {
-// 		this._hasDropped = value;
-// 	}
-// }
-
-
-// function checkUnFilledCell(block) {
-// 	let cellX = block.calcCellXAdress;
-// 	let cellY = block.calcCellYAdress;
-//
-// 	// すでに埋まっているセル、
-// 	// もしくは盤面最下部まで落下したら「落下済み」にする
-// 	if (filledCells[cellY][cellX]
-// 			|| cellY === canvasHeight / block.height - 1) {
-// 		block.hasDropped = true;
-// 		filledCells[cellY][cellX] = true;
-// 	}
-// }
-//
-// function clearCanvas() {
-// 	// Canvasをクリアする
-// 	ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-// 	// すでに埋まっているセルを描画する
-// 	for (let i = 0; i < filledCells.length; i++) {
-// 		for (let j = 0; j < filledCells[i].length; j++) {
-// 			if (filledCells[i][j]) {
-// 				ctx.beginPath();
-// 				ctx.rect(j * blockSize, i * blockSize, blockSize, blockSize);
-// 				ctx.fillStyle = "#0095DD";
-// 				ctx.fill();
-// 				ctx.closePath();
-// 			}
-// 		}
-// 	}
-// }
-//
