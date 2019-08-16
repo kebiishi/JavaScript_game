@@ -1,4 +1,4 @@
-/*
+/**
  * 定数
  */
 // ブロックの1辺のサイズ[px]
@@ -7,10 +7,10 @@ const BLOCK_SIZE = 20;
 const COL_BLOCK_NUM = 20;
 const ROW_BLOCK_NUM = 25;
 // 1フレームの時間間隔[ms]
-// const DELAY = 700;
-const DELAY = 200;
+const DELAY = 700;
+// const DELAY = 200;
 
-/*
+/**
  * グローバル変数
  */
 let interval;
@@ -18,7 +18,7 @@ let interval;
 let blocks = [];
 let fallingBloks = [];
 
-/*
+/**
  * 初期化
  */
 function init() {
@@ -36,7 +36,7 @@ function init() {
 	interval = setInterval(draw, DELAY);
 }
 
-/*
+/**
  * 盤面を描画する
  */
 function drawBoard() {
@@ -56,17 +56,79 @@ function drawBoard() {
 	}
 }
 
-/*
- *
+/**
+ * 盤面を初期化（ブロックを非可視に）。
  */
-function draw() {
+function clearBoard() {
 	const board = document.getElementById("board");
-	// 盤面を初期化（ブロックを非可視に）。
 	Array.from(board.children).forEach(tr => {
 		Array.from(tr.children).forEach(td =>
 			td.style.backgroundColor = "transparent"
 		);
 	});
+}
+
+/**
+ * ブロックのあるセルの背景色をセット。
+ */
+function paintBGColor() {
+	blocks.forEach((row, i) => {
+		row.forEach((cell,j) => {
+			if (cell) {
+				board.children[i].children[j].style.backgroundColor = "#AA0000";
+			}
+		});
+	});
+}
+
+/**
+ * ブロックを移動
+ * @param {String} dir 移動する方向
+ */
+function moveBlock(dir) {
+	switch (dir) {
+		case "down":
+			// 1行落下。
+			fallingBloks.map(e => e.row++);
+			// ブロック配列を更新。
+			fallingBloks.forEach(e => {
+				// 落下し始めはスキップ。
+				if (e.row > 0) {
+					blocks[e.row - 1][e.col] = 0;
+				}
+				blocks[e.row][e.col] = 1;
+			});
+			break;
+		case "right":
+			// 1列右に移動。
+			fallingBloks.map(e => e.col++);
+			// ブロック配列を更新。
+			fallingBloks.forEach(e => {
+				blocks[e.row][e.col - 1] = 0;
+				blocks[e.row][e.col] = 1;
+			});
+			break;
+		case "left":
+			// 1列左に移動。
+			fallingBloks.map(e => e.col--);
+			// ブロック配列を更新。
+			fallingBloks.forEach(e => {
+				blocks[e.row][e.col + 1] = 0;
+				blocks[e.row][e.col] = 1;
+			});
+			break;
+		default:
+			break;
+	}
+}
+
+/**
+ *
+ */
+function draw() {
+	const board = document.getElementById("board");
+	// 盤面をクリア。
+	clearBoard();
 
 	// ブロックが落下し終わったら新しいブロックを生成。
 	if (fallingBloks.length === 0) {
@@ -76,25 +138,11 @@ function draw() {
 		});
 	}
 
-	// 1行落下。
-	fallingBloks.map(e => e.row++);
-	// ブロック配列を更新。
-	fallingBloks.forEach(e => {
-		// 落下し始めはスキップ。
-		if (e.row > 0) {
-			blocks[e.row - 1][e.col] = 0;
-		}
-		blocks[e.row][e.col] = 1;
-	});
+	// 落下。
+	moveBlock("down");
 
-	// ブロックのあるセルの背景色をセット。
-	blocks.forEach((row, i) => {
-		row.forEach((cell,j) => {
-			if (cell) {
-				board.children[i].children[j].style.backgroundColor = "#AA0000";
-			}
-		});
-	});
+	// 背景色を塗る。
+	paintBGColor();
 
 	// 落下完了判定。
 	// 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
@@ -105,22 +153,23 @@ function draw() {
 	})
 }
 
-// 	blockUnit[blockNo].moveDown();
-// 	checkUnFilledCell(blockUnit[blockNo]);
-// }
-//
-// document.addEventListener("keydown", e => {
-// 	clearCanvas();
-// 	if (e.key === "Right" || e.key === "ArrowRight") {
-// 		blockUnit[blockNo].moveRight();
-// 	} else if (e.key === "Left" || e.key === "ArrowLeft") {
-// 		blockUnit[blockNo].moveLeft();
-// 	} else if (e.key === "Down" || e.key === "ArrowDown") {
-// 		blockUnit[blockNo].moveDown();
-// 	}
-// 	checkUnFilledCell(blockUnit[blockNo]);
-// }, false);
-//
+document.addEventListener("keydown", e => {
+	// 盤面をクリア。
+	clearBoard();
+	if (e.key === "Right" || e.key === "ArrowRight") {
+		// 右に移動。
+		moveBlock("right");
+	} else if (e.key === "Left" || e.key === "ArrowLeft") {
+		// 左に移動。
+		moveBlock("left");
+	} else if (e.key === "Down" || e.key === "ArrowDown") {
+		// 下に移動。
+		moveBlock("down");
+	}
+	// 背景色を塗る。
+	paintBGColor();
+}, false);
+
 // class BlockUnit {
 // 	constructor() {
 // 		this._width = blockSize;
