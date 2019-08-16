@@ -31,12 +31,6 @@ function init() {
 		row: -1,
 		col: 0
 	});
-	// blocks[0][0] = 2
-	// const board = document.getElementById("board");
-	// const tr = board.children[0];
-	// const td = tr.children[0];
-	// td.style.backgroundColor = "#AA0000";
-	//
 
 	interval = setInterval(draw, DELAY);
 }
@@ -66,19 +60,32 @@ function drawBoard() {
  */
 function draw() {
 	const board = document.getElementById("board");
+	Array.from(board.children).forEach(tr => {
+		Array.from(tr.children).forEach(td =>
+			td.style.backgroundColor = "transparent"
+		);
+	});
 	fallingBloks.map(e => e.row++);
-	// fallingBloks.map(e => e.row === 0 ? e.row : e.row++);
-	fallingBloks.forEach(e => blocks[e.row][e.col] = 2);
-	blocks.forEach((row, i) => {
-		row.filter(cell => cell ===2)
-			.forEach((cell,j) => {
-				if (i > 0) {
-					board.children[i-1].children[j].style.backgroundColor = "transparent";
-				}
-				board.children[i].children[j].style.backgroundColor = "#AA0000";
-			});
+	fallingBloks.forEach(e => {
+		if (e.row > 0) {
+			blocks[e.row - 1][e.col] = 0;
+		}
+		blocks[e.row][e.col] = 1;
 	});
 
+	blocks.forEach((row, i) => {
+		row.forEach((cell,j) => {
+			if (cell) {
+				board.children[i].children[j].style.backgroundColor = "#AA0000";
+			}
+		});
+	});
+
+	fallingBloks.forEach(e => {
+		if (e.row === ROW_BLOCK_NUM - 1) {
+			fallingBloks = [];
+		}
+	})
 }
 
 // 	blockUnit[blockNo].moveDown();
