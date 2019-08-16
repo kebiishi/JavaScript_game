@@ -6,16 +6,39 @@ const BLOCK_SIZE = 20;
 // ブロック数
 const COL_BLOCK_NUM = 20;
 const ROW_BLOCK_NUM = 25;
+// 1フレームの時間間隔[ms]
+const DELAY = 700;
 
+/*
+ * グローバル変数
+ */
+let interval;
+// 盤面上の各セルにブロックがあるかを保持する
+let blocks = [];
+let fallingBloks = [];
+
+/*
+ * 初期化
+ */
 function init() {
 	"use strict";
 	drawBoard();
 
-	const board = document.getElementById("board");
-	const tr = board.children[0];
-	const td = tr.children[0];
-	td.style.backgroundColor = "#AA0000";
-	// interval = setInterval(draw, 700);
+	// 盤面上のブロックを初期化する。
+	blocks = Array.from(new Array(ROW_BLOCK_NUM), () => new Array(COL_BLOCK_NUM).fill(0));
+
+	fallingBloks.push({
+		row: -1,
+		col: 0
+	});
+	// blocks[0][0] = 2
+	// const board = document.getElementById("board");
+	// const tr = board.children[0];
+	// const td = tr.children[0];
+	// td.style.backgroundColor = "#AA0000";
+	//
+
+	interval = setInterval(draw, DELAY);
 }
 
 /*
@@ -25,7 +48,7 @@ function drawBoard() {
 	const board = document.getElementById("board");
 	board.style.width = BLOCK_SIZE * COL_BLOCK_NUM + "px";
 	board.style.height = BLOCK_SIZE * ROW_BLOCK_NUM + "px";
-	// 盤面のマス目を作成
+	// 盤面のマス目を作成する。
 	for (let i=0; i < ROW_BLOCK_NUM; i++) {
 		let tr = document.createElement("tr");
 		for (let j=0; j < COL_BLOCK_NUM; j++) {
@@ -38,6 +61,42 @@ function drawBoard() {
 	}
 }
 
+/*
+ *
+ */
+function draw() {
+	const board = document.getElementById("board");
+	fallingBloks.map(e => e.row++);
+	// fallingBloks.map(e => e.row === 0 ? e.row : e.row++);
+	fallingBloks.forEach(e => blocks[e.row][e.col] = 2);
+	blocks.forEach((row, i) => {
+		row.filter(cell => cell ===2)
+			.forEach((cell,j) => {
+				if (i > 0) {
+					board.children[i-1].children[j].style.backgroundColor = "transparent";
+				}
+				board.children[i].children[j].style.backgroundColor = "#AA0000";
+			});
+	});
+
+}
+
+// 	blockUnit[blockNo].moveDown();
+// 	checkUnFilledCell(blockUnit[blockNo]);
+// }
+//
+// document.addEventListener("keydown", e => {
+// 	clearCanvas();
+// 	if (e.key === "Right" || e.key === "ArrowRight") {
+// 		blockUnit[blockNo].moveRight();
+// 	} else if (e.key === "Left" || e.key === "ArrowLeft") {
+// 		blockUnit[blockNo].moveLeft();
+// 	} else if (e.key === "Down" || e.key === "ArrowDown") {
+// 		blockUnit[blockNo].moveDown();
+// 	}
+// 	checkUnFilledCell(blockUnit[blockNo]);
+// }, false);
+//
 // class BlockUnit {
 // 	constructor() {
 // 		this._width = blockSize;
@@ -160,32 +219,4 @@ function drawBoard() {
 // 		}
 // 	}
 // }
-//
-// function draw() {
-// 	clearCanvas();
-//
-// 	// ゲーム開始直後のブロック、
-// 	// またはブロックが下まで落下した場合、新たなブロックをNEWする。
-// 	if (blockNo === -1 || blockUnit[blockNo].hasDropped) {
-// 		blockUnit.push(new BlockUnit());
-// 		blockNo++;
-// 		blockUnit[blockNo].draw();
-// 		return;
-// 	}
-//
-// 	blockUnit[blockNo].moveDown();
-// 	checkUnFilledCell(blockUnit[blockNo]);
-// }
-//
-// document.addEventListener("keydown", e => {
-// 	clearCanvas();
-// 	if (e.key === "Right" || e.key === "ArrowRight") {
-// 		blockUnit[blockNo].moveRight();
-// 	} else if (e.key === "Left" || e.key === "ArrowLeft") {
-// 		blockUnit[blockNo].moveLeft();
-// 	} else if (e.key === "Down" || e.key === "ArrowDown") {
-// 		blockUnit[blockNo].moveDown();
-// 	}
-// 	checkUnFilledCell(blockUnit[blockNo]);
-// }, false);
 //
