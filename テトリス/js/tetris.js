@@ -91,25 +91,70 @@ function selectNewParts() {
  * 新しいブロックを生成し、配列を返す。
  * @returns {Object} 新しいブロック
  */
-function createNewParts(parts) {
-	return [
-		{
-			row: -1,
-			col: parts.col
-		},
-		{
-			row: -1,
-			col: parts.col + 1
-		},
-		{
-			row: 0,
-			col: parts.col
-		},
-		{
-			row: 0,
-			col: parts.col + 1
-		}
-	];
+function createNewParts(def) {
+	let parts;
+	console.log(def.pattern);
+	switch (def.pattern) {
+		case "square":
+			parts = [
+				{row: -1, col: def.col},
+				{row: -1, col: def.col + 1},
+				{row: 0,  col: def.col},
+				{row: 0,  col: def.col + 1}
+			];
+			break;
+		case "l-shaped":
+			parts = [
+				{row: -1, col: def.col},
+				{row: -1, col: def.col + 1},
+				{row: -1, col: def.col + 2},
+				{row: 0,  col: def.col}
+			];
+			break;
+		case "anti-l-shaped":
+			parts = [
+				{row: -1, col: def.col},
+				{row: 0,  col: def.col},
+				{row: 0, col: def.col + 1},
+				{row: 0, col: def.col + 2}
+			];
+			break;
+		case "t-shaped":
+			parts = [
+				{row: -1, col: def.col + 1},
+				{row: 0,  col: def.col},
+				{row: 0,  col: def.col + 1},
+				{row: 0,  col: def.col + 2}
+			];
+			break;
+		case "s-shaped":
+			parts = [
+				{row: -1, col: def.col + 1},
+				{row: -1, col: def.col + 2},
+				{row: 0,  col: def.col},
+				{row: 0,  col: def.col + 1}
+			];
+			break;
+		case "anti-s-shaped":
+			parts = [
+				{row: -1, col: def.col},
+				{row: -1, col: def.col + 1},
+				{row: 0,  col: def.col + 1},
+				{row: 0,  col: def.col + 2}
+			];
+			break;
+		case "stick":
+			parts = [
+				{row: -1, col: def.col},
+				{row: -1, col: def.col + 1},
+				{row: -1, col: def.col + 2},
+				{row: -1, col: def.col + 3}
+			];
+			break;
+		default:
+			break;
+	}
+	return parts;
 }
 
 /**
@@ -146,7 +191,10 @@ function moveBlock(dir) {
 			// 右に移動可能な領域を制限する。
 			if (fallingParts.some(p => (p.col === COL_BLOCK_NUM - 1))) {
 				return;
-			};
+			}
+			if (fallingParts.some(p => blocks[p.row][p.col + 1] === 1)) {
+				return;
+			}
 			// 1列右に移動。
 			fallingParts.map(p => p.col++);
 			break;
@@ -154,7 +202,10 @@ function moveBlock(dir) {
 			// 左に移動可能な領域を制限する。
 			if (fallingParts.some(p => p.col === 0)) {
 				return;
-			};
+			}
+			if (fallingParts.some(p => blocks[p.row][p.col - 1] === 1)) {
+				return;
+			}
 			// 1列左に移動。
 			fallingParts.map(p => p.col--);
 			break;
