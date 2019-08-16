@@ -100,6 +100,10 @@ function moveBlock(dir) {
 			});
 			break;
 		case "right":
+			// 右に移動可能な領域を制限する。
+			if (fallingBloks.some(e => (e.col === COL_BLOCK_NUM - 1))) {
+				return;
+			};
 			// 1列右に移動。
 			fallingBloks.map(e => e.col++);
 			// ブロック配列を更新。
@@ -109,6 +113,10 @@ function moveBlock(dir) {
 			});
 			break;
 		case "left":
+			// 左に移動可能な領域を制限する。
+			if (fallingBloks.some(e => (e.col === 0))) {
+				return;
+			};
 			// 1列左に移動。
 			fallingBloks.map(e => e.col--);
 			// ブロック配列を更新。
@@ -120,6 +128,18 @@ function moveBlock(dir) {
 		default:
 			break;
 	}
+}
+
+/**
+ * 落下したかどうかを判定する。
+ * 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
+ */
+function hasFallen() {
+	fallingBloks.forEach(e => {
+		if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
+			fallingBloks.length = 0;
+		}
+	})
 }
 
 /**
@@ -145,12 +165,7 @@ function draw() {
 	paintBGColor();
 
 	// 落下完了判定。
-	// 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
-	fallingBloks.forEach(e => {
-		if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
-			fallingBloks.length = 0;
-		}
-	})
+	hasFallen();
 }
 
 document.addEventListener("keydown", e => {
@@ -165,6 +180,8 @@ document.addEventListener("keydown", e => {
 	} else if (e.key === "Down" || e.key === "ArrowDown") {
 		// 下に移動。
 		moveBlock("down");
+		// 落下完了判定。
+		hasFallen();
 	}
 	// 背景色を塗る。
 	paintBGColor();
