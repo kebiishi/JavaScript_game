@@ -7,7 +7,8 @@ const BLOCK_SIZE = 20;
 const COL_BLOCK_NUM = 20;
 const ROW_BLOCK_NUM = 25;
 // 1フレームの時間間隔[ms]
-const DELAY = 700;
+// const DELAY = 700;
+const DELAY = 200;
 
 /*
  * グローバル変数
@@ -60,19 +61,33 @@ function drawBoard() {
  */
 function draw() {
 	const board = document.getElementById("board");
+	// 盤面を初期化（ブロックを非可視に）。
 	Array.from(board.children).forEach(tr => {
 		Array.from(tr.children).forEach(td =>
 			td.style.backgroundColor = "transparent"
 		);
 	});
+
+	// ブロックが落下し終わったら新しいブロックを生成。
+	if (fallingBloks.length === 0) {
+		fallingBloks.push({
+			row: -1,
+			col: 0
+		});
+	}
+
+	// 1行落下。
 	fallingBloks.map(e => e.row++);
+	// ブロック配列を更新。
 	fallingBloks.forEach(e => {
+		// 落下し始めはスキップ。
 		if (e.row > 0) {
 			blocks[e.row - 1][e.col] = 0;
 		}
 		blocks[e.row][e.col] = 1;
 	});
 
+	// ブロックのあるセルの背景色をセット。
 	blocks.forEach((row, i) => {
 		row.forEach((cell,j) => {
 			if (cell) {
@@ -81,9 +96,11 @@ function draw() {
 		});
 	});
 
+	// 落下完了判定。
+	// 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
 	fallingBloks.forEach(e => {
-		if (e.row === ROW_BLOCK_NUM - 1) {
-			fallingBloks = [];
+		if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
+			fallingBloks.length = 0;
 		}
 	})
 }
