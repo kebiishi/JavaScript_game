@@ -9,6 +9,10 @@ const ROW_BLOCK_NUM = 25;
 // 1フレームの時間間隔[ms]
 const DELAY = 700;
 // const DELAY = 200;
+// パーツの名称
+const PARTS = ["square", "l-shaped", "anti-l-shaped", "t-shaped", "s-shaped", "anti-s-shaped", "stick"];
+// 回転角の名称
+const ROTATION = ["0", "90", "180", "270"];
 
 /**
  * グローバル変数
@@ -16,7 +20,8 @@ const DELAY = 700;
 let interval;
 // 盤面上の各セルにブロックがあるかを保持する
 let blocks = [];
-let fallingBloks = [];
+// 落下中のパーツ
+let fallingParts = [];
 
 /**
  * 初期化
@@ -27,11 +32,6 @@ function init() {
 
 	// 盤面上のブロックを初期化する。
 	blocks = Array.from(new Array(ROW_BLOCK_NUM), () => new Array(COL_BLOCK_NUM).fill(0));
-
-	fallingBloks.push({
-		row: -1,
-		col: 0
-	});
 
 	interval = setInterval(draw, DELAY);
 }
@@ -69,9 +69,58 @@ function clearBoard() {
 }
 
 /**
+ * 新しいパーツの形状、初期位置を返す。
+ * @returns {Object} 新しいパーツの定義
+ */
+function selectNewParts() {
+	// パーツの種類をランダムに決定する。
+	const pattern = PARTS[Math.floor(Math.random() * PARTS.length)];
+	// 回転角をランダムに決定する。
+	const angle = ROTATION[Math.floor(Math.random() * ROTATION.length)];
+	return {
+			pattern: pattern,
+			angle: angle,
+			row: -1,
+			col: 0
+		};
+}
+
+/**
+ * 新しいブロックを生成し、配列を返す。
+ * @returns {Object} 新しいブロック
+ */
+function createNewParts(parts) {
+	return [
+		{
+			row: -1,
+			col: 0
+		},
+		{
+			row: -1,
+			col: 1
+		},
+		{
+			row: 0,
+			col: 0
+		},
+		{
+			row: 0,
+			col: 1
+		}
+	];
+}
+
+/**
  * ブロックのあるセルの背景色をセット。
  */
 function paintBGColor() {
+	// 落下中のブロックを描画。
+	if (fallingParts.length > 0) {
+		fallingParts.forEach(p => {
+			board.children[p.row].children[p.col].style.backgroundColor = "#AA0000";
+		})
+	}
+	// 落下済みのブロックを描画。
 	blocks.forEach((row, i) => {
 		row.forEach((cell,j) => {
 			if (cell) {
@@ -89,41 +138,46 @@ function moveBlock(dir) {
 	switch (dir) {
 		case "down":
 			// 1行落下。
-			fallingBloks.map(e => e.row++);
-			// ブロック配列を更新。
-			fallingBloks.forEach(e => {
-				// 落下し始めはスキップ。
-				if (e.row > 0) {
-					blocks[e.row - 1][e.col] = 0;
-				}
-				blocks[e.row][e.col] = 1;
-			});
+			fallingParts.map(p => p.row++);
+			// fallingParts.row++;
+			// // ブロック配列を更新。
+			// fallingParts.forEach(e => {
+			// 	// 落下し始めはスキップ。
+			// 	if (e.row > 0) {
+			// 		blocks[e.row - 1][e.col] = 0;
+			// 	}
+			// 	blocks[e.row][e.col] = 1;
+			// });
 			break;
 		case "right":
 			// 右に移動可能な領域を制限する。
-			if (fallingBloks.some(e => (e.col === COL_BLOCK_NUM - 1))) {
+			if (fallingParts.some(p => (p.col === COL_BLOCK_NUM - 1))) {
+			// if (fallingParts.col === COL_BLOCK_NUM - 1) {
 				return;
 			};
 			// 1列右に移動。
-			fallingBloks.map(e => e.col++);
-			// ブロック配列を更新。
-			fallingBloks.forEach(e => {
-				blocks[e.row][e.col - 1] = 0;
-				blocks[e.row][e.col] = 1;
-			});
+			fallingParts.map(p => p.col++);
+			// fallingParts.col++;
+			// // ブロック配列を更新。
+			// fallingParts.forEach(e => {
+			// 	blocks[e.row][e.col - 1] = 0;
+			// 	blocks[e.row][e.col] = 1;
+			// });
 			break;
 		case "left":
 			// 左に移動可能な領域を制限する。
-			if (fallingBloks.some(e => (e.col === 0))) {
+			if (fallingParts.some(p => p.col === 0)) {
+			// if (fallingParts.col === 0) {
 				return;
 			};
 			// 1列左に移動。
-			fallingBloks.map(e => e.col--);
+			fallingParts.map(p => p.col--);
+			// fallingParts.col--;
 			// ブロック配列を更新。
-			fallingBloks.forEach(e => {
-				blocks[e.row][e.col + 1] = 0;
-				blocks[e.row][e.col] = 1;
-			});
+			// fallingParts.forEach(e => {
+			// 	blocks[e.row][e.col + 1] = 0;
+			// 	blocks[e.row][e.col] = 1;
+			// });
 			break;
 		default:
 			break;
@@ -135,11 +189,18 @@ function moveBlock(dir) {
  * 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
  */
 function hasFallen() {
-	fallingBloks.forEach(e => {
-		if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
-			fallingBloks.length = 0;
-		}
-	})
+	// fallingParts.forEach(e => {
+	// 	if (e.row === ROW_BLOCK_NUM - 1 || blocks[e.row + 1][e.col] === 1) {
+	// 		fallingParts.length = 0;
+	// 	}
+	// })
+	if (fallingParts.some(p => p.row === ROW_BLOCK_NUM - 1)) {
+		return true;
+	}
+	if (fallingParts.some(p => blocks[p.row + 1][p.col] === 1)) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -151,11 +212,8 @@ function draw() {
 	clearBoard();
 
 	// ブロックが落下し終わったら新しいブロックを生成。
-	if (fallingBloks.length === 0) {
-		fallingBloks.push({
-			row: -1,
-			col: 0
-		});
+	if (!fallingParts.length) {
+		fallingParts = createNewParts(selectNewParts());
 	}
 
 	// 落下。
@@ -165,10 +223,18 @@ function draw() {
 	paintBGColor();
 
 	// 落下完了判定。
-	hasFallen();
+	if (hasFallen()) {
+		// 「落下中」から「落下済み」に移す。
+		fallingParts.forEach(p => blocks[p.row][p.col] = 1);
+		fallingParts.length = 0;
+	}
 }
 
 document.addEventListener("keydown", e => {
+	// 落下中のブロックがない場合は処理をスキップする。
+	if (!fallingParts.length) {
+		return;
+	}
 	// 盤面をクリア。
 	clearBoard();
 	if (e.key === "Right" || e.key === "ArrowRight") {
@@ -181,7 +247,11 @@ document.addEventListener("keydown", e => {
 		// 下に移動。
 		moveBlock("down");
 		// 落下完了判定。
-		hasFallen();
+		if (hasFallen()) {
+			// 「落下中」から「落下済み」に移す。
+			fallingParts.forEach(p => blocks[p.row][p.col] = 1);
+			fallingParts.length = 0;
+		}
 	}
 	// 背景色を塗る。
 	paintBGColor();
