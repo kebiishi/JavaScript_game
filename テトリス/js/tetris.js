@@ -371,6 +371,15 @@ function draw() {
 	// 盤面をクリア。
 	clearBoard();
 
+	// 落下完了判定。
+	// 一番下まで落ちてからブロックを固定するまでに移動できるように、
+	// 落下後の次のintervalでこの判定を行う。
+	if (fallingParts && hasFallen()) {
+		// 「落下中」から「落下済み」に移す。
+		fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
+		fallingParts = null;
+	}
+
 	// ブロックが落下し終わったら新しいブロックを生成。
 	if (!fallingParts) {
 		fallingParts = createNewParts(selectNewParts());
@@ -382,12 +391,6 @@ function draw() {
 	// 背景色を塗る。
 	paintBGColor();
 
-	// 落下完了判定。
-	if (hasFallen()) {
-		// 「落下中」から「落下済み」に移す。
-		fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
-		fallingParts = null;
-	}
 }
 
 document.addEventListener("keydown", e => {
