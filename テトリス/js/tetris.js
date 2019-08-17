@@ -415,20 +415,20 @@ document.addEventListener("keydown", e => {
 	// "c"キー押下で右回転
 	} else if (e.key === "c") {
 		fallingParts = createNewParts({
-			pattern:  fallingParts.pattern,
-			angle:    (fallingParts.angle + 1) % ROTATION.length,
-			row: fallingParts.position[0].row,
-			col: fallingParts.position[0].col,
-			color:    fallingParts.color
+			pattern: fallingParts.pattern,
+			angle:   (fallingParts.angle + 1) % ROTATION.length,
+			row:     fallingParts.position[0].row,
+			col:     fallingParts.position[0].col,
+			color:   fallingParts.color
 		});
 	// "z"キー押下で左回転
 	} else if (e.key === "z") {
 		fallingParts = createNewParts({
-			pattern:  fallingParts.pattern,
-			angle:    (fallingParts.angle - 1) % ROTATION.length,
-			row: fallingParts.position[0].row,
-			col: fallingParts.position[0].col,
-			color:    fallingParts.color
+			pattern: fallingParts.pattern,
+			angle:   (fallingParts.angle + ROTATION.length - 1) % ROTATION.length,
+			row:     fallingParts.position[0].row,
+			col:     fallingParts.position[0].col,
+			color:   fallingParts.color
 		});
 	} else if (e.key === "x") {
 
