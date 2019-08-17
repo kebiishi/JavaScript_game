@@ -9,8 +9,18 @@ const ROW_BLOCK_NUM = 25;
 // 1フレームの時間間隔[ms]
 const DELAY = 700;
 // const DELAY = 200;
-// パーツの名称
-const PARTS = ["square", "l-shaped", "anti-l-shaped", "t-shaped", "s-shaped", "anti-s-shaped", "stick"];
+
+// パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
+// COL_BLOCK_NUMからの相対位置として指定。
+const PARTS = [
+	{name: "O-shaped", initColRange: -1},
+	{name: "L-shaped", initColRange: -2},
+	{name: "J-shaped", initColRange: -2},
+	{name: "T-shaped", initColRange: -2},
+	{name: "S-shaped", initColRange: -2},
+	{name: "Z-shaped", initColRange: -2},
+	{name: "I-shaped", initColRange: -3}
+];
 // 回転角の名称
 const ROTATION = ["0", "90", "180", "270"];
 
@@ -74,11 +84,12 @@ function clearBoard() {
  */
 function selectNewParts() {
 	// パーツの種類をランダムに決定する。
-	const pattern = PARTS[Math.floor(Math.random() * PARTS.length)];
+	const rand = Math.floor(Math.random() * PARTS.length);
+	const pattern = PARTS[rand].name;
 	// 回転角をランダムに決定する。
 	const angle = ROTATION[Math.floor(Math.random() * ROTATION.length)];
 	// パーツの基準セルの初期位置をランダムに決定する。
-	const initCol = Math.floor(Math.random() * COL_BLOCK_NUM);
+	const initCol = Math.floor(Math.random() * (COL_BLOCK_NUM + PARTS[rand].initColRange));
 	return {
 			pattern: pattern,
 			angle: angle,
@@ -95,7 +106,7 @@ function createNewParts(def) {
 	let parts;
 	console.log(def.pattern);
 	switch (def.pattern) {
-		case "square":
+		case "O-shaped":
 			parts = [
 				{row: -1, col: def.col},
 				{row: -1, col: def.col + 1},
@@ -103,15 +114,15 @@ function createNewParts(def) {
 				{row: 0,  col: def.col + 1}
 			];
 			break;
-		case "l-shaped":
+		case "L-shaped":
 			parts = [
-				{row: -1, col: def.col},
-				{row: -1, col: def.col + 1},
 				{row: -1, col: def.col + 2},
-				{row: 0,  col: def.col}
+				{row: 0, col: def.col},
+				{row: 0, col: def.col + 1},
+				{row: 0, col: def.col + 2}
 			];
 			break;
-		case "anti-l-shaped":
+		case "J-shaped":
 			parts = [
 				{row: -1, col: def.col},
 				{row: 0,  col: def.col},
@@ -119,7 +130,7 @@ function createNewParts(def) {
 				{row: 0, col: def.col + 2}
 			];
 			break;
-		case "t-shaped":
+		case "T-shaped":
 			parts = [
 				{row: -1, col: def.col + 1},
 				{row: 0,  col: def.col},
@@ -127,7 +138,7 @@ function createNewParts(def) {
 				{row: 0,  col: def.col + 2}
 			];
 			break;
-		case "s-shaped":
+		case "S-shaped":
 			parts = [
 				{row: -1, col: def.col + 1},
 				{row: -1, col: def.col + 2},
@@ -135,7 +146,7 @@ function createNewParts(def) {
 				{row: 0,  col: def.col + 1}
 			];
 			break;
-		case "anti-s-shaped":
+		case "Z-shaped":
 			parts = [
 				{row: -1, col: def.col},
 				{row: -1, col: def.col + 1},
@@ -143,7 +154,7 @@ function createNewParts(def) {
 				{row: 0,  col: def.col + 2}
 			];
 			break;
-		case "stick":
+		case "I-shaped":
 			parts = [
 				{row: -1, col: def.col},
 				{row: -1, col: def.col + 1},
