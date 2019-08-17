@@ -13,13 +13,13 @@ const DELAY = 700;
 // パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
 // COL_BLOCK_NUMからの相対位置として指定。
 const PARTS = [
-	{name: "O-shaped", initColRange: -1},
-	{name: "L-shaped", initColRange: -2},
-	{name: "J-shaped", initColRange: -2},
-	{name: "T-shaped", initColRange: -2},
-	{name: "S-shaped", initColRange: -2},
-	{name: "Z-shaped", initColRange: -2},
-	{name: "I-shaped", initColRange: -3}
+	{name: "O-shaped", color:"#ffd600", initColRange: -1},
+	{name: "L-shaped", color:"#ff6d00", initColRange: -2},
+	{name: "J-shaped", color:"#304ff2", initColRange: -2},
+	{name: "T-shaped", color:"#0091ea", initColRange: -2},
+	{name: "S-shaped", color:"#c51162", initColRange: -2},
+	{name: "Z-shaped", color:"#64dd17", initColRange: -2},
+	{name: "I-shaped", color:"#d50000", initColRange: -3}
 ];
 // 回転角の名称
 const ROTATION = ["0", "90", "180", "270"];
@@ -31,7 +31,7 @@ let interval;
 // 盤面上の各セルにブロックがあるかを保持する
 let blocks = [];
 // 落下中のパーツ
-let fallingParts = [];
+let fallingParts;
 
 /**
  * 初期化
@@ -86,15 +86,16 @@ function selectNewParts() {
 	// パーツの種類をランダムに決定する。
 	const rand = Math.floor(Math.random() * PARTS.length);
 	const pattern = PARTS[rand].name;
-	// 回転角をランダムに決定する。
-	const angle = ROTATION[Math.floor(Math.random() * ROTATION.length)];
+	// 初期の行番号は固定。
+	const initRow = -1;
 	// パーツの基準セルの初期位置をランダムに決定する。
 	const initCol = Math.floor(Math.random() * (COL_BLOCK_NUM + PARTS[rand].initColRange));
 	return {
 			pattern: pattern,
-			angle: angle,
-			row: -1,
-			col: initCol
+			angle: ROTATION[0],
+			row: initRow,
+			col: initCol,
+			color: PARTS[rand].color
 		};
 }
 
@@ -103,69 +104,73 @@ function selectNewParts() {
  * @returns {Object} 新しいブロック
  */
 function createNewParts(def) {
-	let parts;
+	let position;
 	console.log(def.pattern);
 	switch (def.pattern) {
 		case "O-shaped":
-			parts = [
-				{row: -1, col: def.col},
-				{row: -1, col: def.col + 1},
-				{row: 0,  col: def.col},
-				{row: 0,  col: def.col + 1}
+			position = [
+				{row: def.row,     col: def.col},
+				{row: def.row,     col: def.col + 1},
+				{row: def.row + 1, col: def.col},
+				{row: def.row + 1, col: def.col + 1}
 			];
 			break;
 		case "L-shaped":
-			parts = [
-				{row: -1, col: def.col + 2},
-				{row: 0, col: def.col},
-				{row: 0, col: def.col + 1},
-				{row: 0, col: def.col + 2}
+			position = [
+				{row: def.row,     col: def.col + 2},
+				{row: def.row + 1, col: def.col},
+				{row: def.row + 1, col: def.col + 1},
+				{row: def.row + 1, col: def.col + 2}
 			];
 			break;
 		case "J-shaped":
-			parts = [
-				{row: -1, col: def.col},
-				{row: 0,  col: def.col},
-				{row: 0, col: def.col + 1},
-				{row: 0, col: def.col + 2}
+			position = [
+				{row: def.row,     col: def.col},
+				{row: def.row + 1, col: def.col},
+				{row: def.row + 1, col: def.col + 1},
+				{row: def.row + 1, col: def.col + 2}
 			];
 			break;
 		case "T-shaped":
-			parts = [
-				{row: -1, col: def.col + 1},
-				{row: 0,  col: def.col},
-				{row: 0,  col: def.col + 1},
-				{row: 0,  col: def.col + 2}
+			position = [
+				{row: def.row,     col: def.col + 1},
+				{row: def.row + 1, col: def.col},
+				{row: def.row + 1, col: def.col + 1},
+				{row: def.row + 1, col: def.col + 2}
 			];
 			break;
 		case "S-shaped":
-			parts = [
-				{row: -1, col: def.col + 1},
-				{row: -1, col: def.col + 2},
-				{row: 0,  col: def.col},
-				{row: 0,  col: def.col + 1}
+			position = [
+				{row: def.row,     col: def.col + 1},
+				{row: def.row,     col: def.col + 2},
+				{row: def.row + 1, col: def.col},
+				{row: def.row + 1, col: def.col + 1}
 			];
 			break;
 		case "Z-shaped":
-			parts = [
-				{row: -1, col: def.col},
-				{row: -1, col: def.col + 1},
-				{row: 0,  col: def.col + 1},
-				{row: 0,  col: def.col + 2}
+			position = [
+				{row: def.row,     col: def.col},
+				{row: def.row,     col: def.col + 1},
+				{row: def.row + 1, col: def.col + 1},
+				{row: def.row + 1, col: def.col + 2}
 			];
 			break;
 		case "I-shaped":
-			parts = [
-				{row: -1, col: def.col},
-				{row: -1, col: def.col + 1},
-				{row: -1, col: def.col + 2},
-				{row: -1, col: def.col + 3}
+			position = [
+				{row: def.row, col: def.col},
+				{row: def.row, col: def.col + 1},
+				{row: def.row, col: def.col + 2},
+				{row: def.row, col: def.col + 3}
 			];
 			break;
 		default:
 			break;
 	}
-	return parts;
+	return {
+		angle:    def.angle,
+		position: position,
+		color:    def.color
+	};
 }
 
 /**
@@ -173,9 +178,9 @@ function createNewParts(def) {
  */
 function paintBGColor() {
 	// 落下中のブロックを描画。
-	if (fallingParts.length > 0) {
-		fallingParts.forEach(p => {
-			board.children[p.row].children[p.col].style.backgroundColor = "#AA0000";
+	if (fallingParts) {
+		fallingParts.position.forEach(p => {
+			board.children[p.row].children[p.col].style.backgroundColor = fallingParts.color;
 		})
 	}
 	// 落下済みのブロックを描画。
@@ -196,29 +201,29 @@ function moveBlock(dir) {
 	switch (dir) {
 		case "down":
 			// 1行落下。
-			fallingParts.map(p => p.row++);
+			fallingParts.position.map(p => p.row++);
 			break;
 		case "right":
 			// 右に移動可能な領域を制限する。
-			if (fallingParts.some(p => (p.col === COL_BLOCK_NUM - 1))) {
+			if (fallingParts.position.some(p => (p.col === COL_BLOCK_NUM - 1))) {
 				return;
 			}
-			if (fallingParts.some(p => blocks[p.row][p.col + 1] === 1)) {
+			if (fallingParts.position.some(p => blocks[p.row][p.col + 1] === 1)) {
 				return;
 			}
 			// 1列右に移動。
-			fallingParts.map(p => p.col++);
+			fallingParts.position.map(p => p.col++);
 			break;
 		case "left":
 			// 左に移動可能な領域を制限する。
-			if (fallingParts.some(p => p.col === 0)) {
+			if (fallingParts.position.some(p => p.col === 0)) {
 				return;
 			}
-			if (fallingParts.some(p => blocks[p.row][p.col - 1] === 1)) {
+			if (fallingParts.position.some(p => blocks[p.row][p.col - 1] === 1)) {
 				return;
 			}
 			// 1列左に移動。
-			fallingParts.map(p => p.col--);
+			fallingParts.position.map(p => p.col--);
 			break;
 		default:
 			break;
@@ -230,10 +235,10 @@ function moveBlock(dir) {
  * 最下部まで落下、もしくは直下のセルがすでに埋まっている場合、落下完了とする。
  */
 function hasFallen() {
-	if (fallingParts.some(p => p.row === ROW_BLOCK_NUM - 1)) {
+	if (fallingParts.position.some(p => p.row === ROW_BLOCK_NUM - 1)) {
 		return true;
 	}
-	if (fallingParts.some(p => blocks[p.row + 1][p.col] === 1)) {
+	if (fallingParts.position.some(p => blocks[p.row + 1][p.col] === 1)) {
 		return true;
 	}
 	return false;
@@ -248,7 +253,7 @@ function draw() {
 	clearBoard();
 
 	// ブロックが落下し終わったら新しいブロックを生成。
-	if (!fallingParts.length) {
+	if (!fallingParts) {
 		fallingParts = createNewParts(selectNewParts());
 	}
 
@@ -261,14 +266,14 @@ function draw() {
 	// 落下完了判定。
 	if (hasFallen()) {
 		// 「落下中」から「落下済み」に移す。
-		fallingParts.forEach(p => blocks[p.row][p.col] = 1);
-		fallingParts.length = 0;
+		fallingParts.position.forEach(p => blocks[p.row][p.col] = 1);
+		fallingParts = null;
 	}
 }
 
 document.addEventListener("keydown", e => {
 	// 落下中のブロックがない場合は処理をスキップする。
-	if (!fallingParts.length) {
+	if (!fallingParts) {
 		return;
 	}
 	// 盤面をクリア。
@@ -285,9 +290,17 @@ document.addEventListener("keydown", e => {
 		// 落下完了判定。
 		if (hasFallen()) {
 			// 「落下中」から「落下済み」に移す。
-			fallingParts.forEach(p => blocks[p.row][p.col] = 1);
-			fallingParts.length = 0;
+			fallingParts.position.forEach(p => blocks[p.row][p.col] = 1);
+			fallingParts = null;
 		}
+	// "c"キー押下で右回転
+	} else if (e.keycode === "67") {
+
+	// "z"キー押下で右回転
+	} else if (e.keycode === "90") {
+
+	} else if (e.keycode === "88") {
+
 	}
 	// 背景色を塗る。
 	paintBGColor();
