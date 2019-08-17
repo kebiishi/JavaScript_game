@@ -41,7 +41,8 @@ function init() {
 	drawBoard();
 
 	// 盤面上のブロックを初期化する。
-	blocks = Array.from(new Array(ROW_BLOCK_NUM), () => new Array(COL_BLOCK_NUM).fill(0));
+	// 各セルにブロックがあるかどうかは、背景色が透明かそうでないかで判断する。
+	blocks = Array.from(new Array(ROW_BLOCK_NUM), () => new Array(COL_BLOCK_NUM).fill("transparent"));
 
 	interval = setInterval(draw, DELAY);
 }
@@ -296,20 +297,19 @@ function createNewParts(def) {
  * ブロックのあるセルの背景色をセット。
  */
 function paintBGColor() {
+	// 落下済みのブロックを描画。
+	// blocks配列には背景色を保持している。
+	blocks.forEach((row, i) => {
+		row.forEach((cell,j) => {
+			board.children[i].children[j].style.backgroundColor = cell;
+		});
+	});
 	// 落下中のブロックを描画。
 	if (fallingParts) {
 		fallingParts.position.forEach(p => {
 			board.children[p.row].children[p.col].style.backgroundColor = fallingParts.color;
 		})
 	}
-	// 落下済みのブロックを描画。
-	blocks.forEach((row, i) => {
-		row.forEach((cell,j) => {
-			if (cell) {
-				board.children[i].children[j].style.backgroundColor = "#AA0000";
-			}
-		});
-	});
 }
 
 /**
@@ -327,7 +327,7 @@ function moveBlock(dir) {
 			if (fallingParts.position.some(p => (p.col === COL_BLOCK_NUM - 1))) {
 				return;
 			}
-			if (fallingParts.position.some(p => blocks[p.row][p.col + 1] === 1)) {
+			if (fallingParts.position.some(p => blocks[p.row][p.col + 1] !== "transparent")) {
 				return;
 			}
 			// 1列右に移動。
@@ -338,7 +338,7 @@ function moveBlock(dir) {
 			if (fallingParts.position.some(p => p.col === 0)) {
 				return;
 			}
-			if (fallingParts.position.some(p => blocks[p.row][p.col - 1] === 1)) {
+			if (fallingParts.position.some(p => blocks[p.row][p.col - 1] !== "transparent")) {
 				return;
 			}
 			// 1列左に移動。
@@ -357,7 +357,7 @@ function hasFallen() {
 	if (fallingParts.position.some(p => p.row === ROW_BLOCK_NUM - 1)) {
 		return true;
 	}
-	if (fallingParts.position.some(p => blocks[p.row + 1][p.col] === 1)) {
+	if (fallingParts.position.some(p => blocks[p.row + 1][p.col] !== "transparent")) {
 		return true;
 	}
 	return false;
@@ -385,7 +385,7 @@ function draw() {
 	// 落下完了判定。
 	if (hasFallen()) {
 		// 「落下中」から「落下済み」に移す。
-		fallingParts.position.forEach(p => blocks[p.row][p.col] = 1);
+		fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
 		fallingParts = null;
 	}
 }
@@ -409,7 +409,7 @@ document.addEventListener("keydown", e => {
 		// 落下完了判定。
 		if (hasFallen()) {
 			// 「落下中」から「落下済み」に移す。
-			fallingParts.position.forEach(p => blocks[p.row][p.col] = 1);
+			fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
 			fallingParts = null;
 		}
 	// "c"キー押下で右回転
