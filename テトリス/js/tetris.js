@@ -13,16 +13,16 @@ const DELAY = 700;
 // パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
 // COL_BLOCK_NUMからの相対位置として指定。
 const PARTS = [
-	{name: "O-shaped", color:"#ffd600", initColRange: -1},
-	{name: "L-shaped", color:"#ff6d00", initColRange: -2},
-	{name: "J-shaped", color:"#304ff2", initColRange: -2},
-	{name: "T-shaped", color:"#0091ea", initColRange: -2},
-	{name: "S-shaped", color:"#c51162", initColRange: -2},
-	{name: "Z-shaped", color:"#64dd17", initColRange: -2},
-	{name: "I-shaped", color:"#d50000", initColRange: -3}
+	{name: "O-shaped", color:"#ffd600", initColMin: 0, initColMax: 1},
+	{name: "L-shaped", color:"#ff6d00", initColMin: 1, initColMax: 1},
+	{name: "J-shaped", color:"#304ff2", initColMin: 1, initColMax: 1},
+	{name: "T-shaped", color:"#0091ea", initColMin: 1, initColMax: 1},
+	{name: "S-shaped", color:"#c51162", initColMin: 1, initColMax: 1},
+	{name: "Z-shaped", color:"#64dd17", initColMin: 1, initColMax: 1},
+	{name: "I-shaped", color:"#d50000", initColMin: 1, initColMax: 2}
 ];
 // 回転角の名称
-const ROTATION = ["0", "90", "180", "270"];
+const ROTATION = [0, 90, 180, 270];
 
 /**
  * グローバル変数
@@ -84,18 +84,17 @@ function clearBoard() {
  */
 function selectNewParts() {
 	// パーツの種類をランダムに決定する。
-	const rand = Math.floor(Math.random() * PARTS.length);
-	const pattern = PARTS[rand].name;
+	const pattern = Math.floor(Math.random() * PARTS.length);
 	// 初期の行番号は固定。
 	const initRow = -1;
 	// パーツの基準セルの初期位置をランダムに決定する。
-	const initCol = Math.floor(Math.random() * (COL_BLOCK_NUM + PARTS[rand].initColRange));
+	const initCol = Math.floor(Math.random() * (COL_BLOCK_NUM - PARTS[pattern].initColMax - PARTS[pattern].initColMin) + PARTS[pattern].initColMin);
 	return {
 			pattern: pattern,
-			angle: ROTATION[0],
+			angle: 0,
 			row: initRow,
 			col: initCol,
-			color: PARTS[rand].color
+			color: PARTS[pattern].color
 		};
 }
 
@@ -104,71 +103,191 @@ function selectNewParts() {
  * @returns {Object} 新しいブロック
  */
 function createNewParts(def) {
-	let position;
-	console.log(def.pattern);
-	switch (def.pattern) {
-		case "O-shaped":
-			position = [
-				{row: def.row,     col: def.col},
-				{row: def.row,     col: def.col + 1},
-				{row: def.row + 1, col: def.col},
-				{row: def.row + 1, col: def.col + 1}
-			];
-			break;
-		case "L-shaped":
-			position = [
-				{row: def.row,     col: def.col + 2},
-				{row: def.row + 1, col: def.col},
-				{row: def.row + 1, col: def.col + 1},
-				{row: def.row + 1, col: def.col + 2}
-			];
-			break;
-		case "J-shaped":
-			position = [
-				{row: def.row,     col: def.col},
-				{row: def.row + 1, col: def.col},
-				{row: def.row + 1, col: def.col + 1},
-				{row: def.row + 1, col: def.col + 2}
-			];
-			break;
-		case "T-shaped":
-			position = [
-				{row: def.row,     col: def.col + 1},
-				{row: def.row + 1, col: def.col},
-				{row: def.row + 1, col: def.col + 1},
-				{row: def.row + 1, col: def.col + 2}
-			];
-			break;
-		case "S-shaped":
-			position = [
-				{row: def.row,     col: def.col + 1},
-				{row: def.row,     col: def.col + 2},
-				{row: def.row + 1, col: def.col},
-				{row: def.row + 1, col: def.col + 1}
-			];
-			break;
-		case "Z-shaped":
-			position = [
-				{row: def.row,     col: def.col},
-				{row: def.row,     col: def.col + 1},
-				{row: def.row + 1, col: def.col + 1},
-				{row: def.row + 1, col: def.col + 2}
-			];
-			break;
-		case "I-shaped":
-			position = [
-				{row: def.row, col: def.col},
-				{row: def.row, col: def.col + 1},
-				{row: def.row, col: def.col + 2},
-				{row: def.row, col: def.col + 3}
-			];
-			break;
-		default:
-			break;
-	}
+	// パーツのセル位置を定義する。
+	// 配列の順番は、定数PARTSとROTATIONに準ずる。
+	const position = [
+		// "O-shaped":
+		// 0度
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		// "L-shaped":
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col - 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col - 1},
+			{row: def.row - 1, col: def.col},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row - 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		// "J-shaped":
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row + 1, col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col - 1},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row - 1, col: def.col + 1},
+			{row: def.row + 1, col: def.col}
+		],
+		// "T-shaped":
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row,     col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col}
+		],
+		// "S-shaped":
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col - 1},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col + 1},
+			{row: def.row + 1, col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col - 1},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col}
+		],
+		// "Z-shaped":
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col - 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 1, col: def.col + 1}
+		],
+		[
+			{row: def.row,     col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row,     col: def.col - 1},
+			{row: def.row + 1, col: def.col - 1}
+		],
+		// "I-shaped":
+		[
+			{row: def.row, col: def.col},
+			{row: def.row, col: def.col - 1},
+			{row: def.row, col: def.col + 1},
+			{row: def.row, col: def.col + 2}
+		],
+		[
+			{row: def.row, col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 2, col: def.col}
+		],
+		[
+			{row: def.row, col: def.col},
+			{row: def.row, col: def.col - 1},
+			{row: def.row, col: def.col + 1},
+			{row: def.row, col: def.col + 2}
+		],
+		[
+			{row: def.row, col: def.col},
+			{row: def.row - 1, col: def.col},
+			{row: def.row + 1, col: def.col},
+			{row: def.row + 2, col: def.col}
+		]
+	];
+	console.log(PARTS[def.pattern].name + " " + def.angle + " " + position[def.pattern * ROTATION.length + def.angle]);
 	return {
+		pattern:  def.pattern,
 		angle:    def.angle,
-		position: position,
+		position: position[def.pattern * ROTATION.length + def.angle],
 		color:    def.color
 	};
 }
@@ -294,12 +413,24 @@ document.addEventListener("keydown", e => {
 			fallingParts = null;
 		}
 	// "c"キー押下で右回転
-	} else if (e.keycode === "67") {
-
-	// "z"キー押下で右回転
-	} else if (e.keycode === "90") {
-
-	} else if (e.keycode === "88") {
+	} else if (e.key === "c") {
+		fallingParts = createNewParts({
+			pattern:  fallingParts.pattern,
+			angle:    (fallingParts.angle + 1) % ROTATION.length,
+			row: fallingParts.position[0].row,
+			col: fallingParts.position[0].col,
+			color:    fallingParts.color
+		});
+	// "z"キー押下で左回転
+	} else if (e.key === "z") {
+		fallingParts = createNewParts({
+			pattern:  fallingParts.pattern,
+			angle:    (fallingParts.angle - 1) % ROTATION.length,
+			row: fallingParts.position[0].row,
+			col: fallingParts.position[0].col,
+			color:    fallingParts.color
+		});
+	} else if (e.key === "x") {
 
 	}
 	// 背景色を塗る。
