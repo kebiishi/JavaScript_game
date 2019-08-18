@@ -7,8 +7,8 @@ const BLOCK_SIZE = 20;
 const COL_BLOCK_NUM = 10;
 const ROW_BLOCK_NUM = 20;
 // 1フレームの時間間隔[ms]
-// const DELAY = 700;
-const DELAY = 200;
+const DELAY = 700;
+// const DELAY = 200;
 
 // パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
 // COL_BLOCK_NUMからの相対位置として指定。
@@ -101,6 +101,7 @@ function selectNewParts() {
 
 /**
  * 新しいブロックを生成し、配列を返す。
+ * パーツの回転も新規作成とみなす。
  * @returns {Object} 新しいブロック
  */
 function createNewParts(def) {
@@ -363,13 +364,32 @@ function hasFallen() {
 	return false;
 }
 
+/**
+ * パーツが回転可能かどうかを判定する。
+ * 引数として与えられた回転後のパーツが、他のブロック・壁と干渉しない場合回転可とする。
+ */
+function isRotable(parts) {
+	if (parts.position.some(p =>
+		// 盤面に存在する行からはみ出た場合。
+		p.row < 0 || ROW_BLOCK_NUM - 1 < p.row
+		// 盤面に存在する列からはみ出た場合。
+				|| p.col < 0 || COL_BLOCK_NUM - 1 < p.col
+		// いずれかのセルがすでに他のブロックで埋まっていた場合。
+				|| blocks[p.row][p.col] !== "transparent")) {
+		return false;
+	}
+	return true;
+}
+
 /*
  * ブロックが整列した行を消去する。
  */
 function deleteRow() {
 	blocks.forEach((row, i, blocks) => {
+		// 1行すべてブロックで埋まっていたら。
 		if (row.every(cell => cell !== "transparent")) {
 			for (let j = i; j >= 0; j--) {
+				// すぐ上の行のブロック情報を下にずらす。
 				if (j === 0) {
 					blocks[j].fill("transparent");
 					continue;
@@ -427,32 +447,45 @@ document.addEventListener("keydown", e => {
 		// 左に移動。
 		moveBlock("left");
 	} else if (e.key === "Down" || e.key === "ArrowDown") {
-		// 下に移動。
-		moveBlock("down");
 		// 落下完了判定。
 		if (hasFallen()) {
 			// 「落下中」から「落下済み」に移す。
 			fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
 			fallingParts = null;
+		// まだ落下できる領域があれば下に移動する。
+		} else {
+			moveBlock("down");
 		}
+	// ハードドロップ
+	} else if (e.key === " ") {
+		console.log("space");
 	// "c"キー押下で右回転
 	} else if (e.key === "c") {
-		fallingParts = createNewParts({
+		// 回転後のパーツ情報を取得する。
+		const newParts = createNewParts({
 			pattern: fallingParts.pattern,
 			angle:   (fallingParts.angle + 1) % ROTATION.length,
 			row:     fallingParts.position[0].row,
 			col:     fallingParts.position[0].col,
 			color:   fallingParts.color
 		});
+		// 回転可能かを判定し、回転可なら落下中のパーツと入れ替える。
+		if (isRotable(newParts)) {
+			fallingParts = newParts;
+		}
 	// "z"キー押下で左回転
 	} else if (e.key === "z") {
-		fallingParts = createNewParts({
+		const newParts = createNewParts({
 			pattern: fallingParts.pattern,
 			angle:   (fallingParts.angle + ROTATION.length - 1) % ROTATION.length,
 			row:     fallingParts.position[0].row,
 			col:     fallingParts.position[0].col,
 			color:   fallingParts.color
 		});
+		// 回転可能かを判定し、回転可なら落下中のパーツと入れ替える。
+		if (isRotable(newParts)) {
+			fallingParts = newParts;
+		}
 	} else if (e.key === "x") {
 
 	}
