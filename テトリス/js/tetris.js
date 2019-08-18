@@ -7,8 +7,8 @@ const BLOCK_SIZE = 20;
 const COL_BLOCK_NUM = 10;
 const ROW_BLOCK_NUM = 20;
 // 1フレームの時間間隔[ms]
-const DELAY = 700;
-// const DELAY = 200;
+// const DELAY = 700;
+const DELAY = 200;
 
 // パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
 // COL_BLOCK_NUMからの相対位置として指定。
@@ -365,10 +365,9 @@ function hasFallen() {
 }
 
 /**
- * パーツが回転可能かどうかを判定する。
- * 引数として与えられた回転後のパーツが、他のブロック・壁と干渉しない場合回転可とする。
+ * 引数として与えられたパーツが、他のブロック・壁と干渉しないかを判定する。
  */
-function isRotable(parts) {
+function canExists(parts) {
 	if (parts.position.some(p =>
 		// 盤面に存在する行からはみ出た場合。
 		p.row < 0 || ROW_BLOCK_NUM - 1 < p.row
@@ -428,6 +427,14 @@ function draw() {
 	// 落下。
 	moveBlock("down");
 
+	// 落下後のパーツが盤面に存在できるかを判定。
+	// falseの場合、ゲームオーバー。
+	if (!canExists(fallingParts)) {
+		alert("またのご利用をお待ちしております。");
+		document.location.reload();
+		clearInterval(interval);
+	}
+
 	// 背景色を塗る。
 	paintBGColor();
 
@@ -470,7 +477,7 @@ document.addEventListener("keydown", e => {
 			color:   fallingParts.color
 		});
 		// 回転可能かを判定し、回転可なら落下中のパーツと入れ替える。
-		if (isRotable(newParts)) {
+		if (canExists(newParts)) {
 			fallingParts = newParts;
 		}
 	// "z"キー押下で左回転
@@ -483,7 +490,7 @@ document.addEventListener("keydown", e => {
 			color:   fallingParts.color
 		});
 		// 回転可能かを判定し、回転可なら落下中のパーツと入れ替える。
-		if (isRotable(newParts)) {
+		if (canExists(newParts)) {
 			fallingParts = newParts;
 		}
 	} else if (e.key === "x") {
