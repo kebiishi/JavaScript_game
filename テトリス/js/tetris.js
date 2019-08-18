@@ -4,11 +4,11 @@
 // ブロックの1辺のサイズ[px]
 const BLOCK_SIZE = 20;
 // ブロック数
-const COL_BLOCK_NUM = 20;
-const ROW_BLOCK_NUM = 25;
+const COL_BLOCK_NUM = 10;
+const ROW_BLOCK_NUM = 20;
 // 1フレームの時間間隔[ms]
-const DELAY = 700;
-// const DELAY = 200;
+// const DELAY = 700;
+const DELAY = 200;
 
 // パーツの名称とパーツのパターンごとの、初期位置の許容範囲。
 // COL_BLOCK_NUMからの相対位置として指定。
@@ -320,7 +320,7 @@ function moveBlock(dir) {
 	switch (dir) {
 		case "down":
 			// 1行落下。
-			fallingParts.position.map(p => p.row++);
+			fallingParts.position.forEach(p => p.row++);
 			break;
 		case "right":
 			// 右に移動可能な領域を制限する。
@@ -331,7 +331,7 @@ function moveBlock(dir) {
 				return;
 			}
 			// 1列右に移動。
-			fallingParts.position.map(p => p.col++);
+			fallingParts.position.forEach(p => p.col++);
 			break;
 		case "left":
 			// 左に移動可能な領域を制限する。
@@ -342,7 +342,7 @@ function moveBlock(dir) {
 				return;
 			}
 			// 1列左に移動。
-			fallingParts.position.map(p => p.col--);
+			fallingParts.position.forEach(p => p.col--);
 			break;
 		default:
 			break;
@@ -363,6 +363,23 @@ function hasFallen() {
 	return false;
 }
 
+/*
+ * ブロックが整列した行を消去する。
+ */
+function deleteRow() {
+	blocks.forEach((row, i, blocks) => {
+		if (row.every(cell => cell !== "transparent")) {
+			for (let j = i; j >= 0; j--) {
+				if (j === 0) {
+					blocks[j].fill("transparent");
+					continue;
+				}
+				blocks[j] = blocks[j - 1];
+			}
+		}
+	});
+}
+
 /**
  *
  */
@@ -379,6 +396,9 @@ function draw() {
 		fallingParts.position.forEach(p => blocks[p.row][p.col] = fallingParts.color);
 		fallingParts = null;
 	}
+
+	// ブロックが整列した行を消す。
+	deleteRow();
 
 	// ブロックが落下し終わったら新しいブロックを生成。
 	if (!fallingParts) {
