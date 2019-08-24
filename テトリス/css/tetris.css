@@ -1,11 +1,25 @@
 #board {
 	background-color: #373737;
-	/* border: solid 3px #616161; */
 	border-collapse: collapse;
 	margin: 0 auto;
 }
-
 #board > tr > td {
+	border: solid 1px #616161;
+	margin: 0;
+	padding: 0;
+}
+
+#guideline {
+	text-align: center;
+}
+
+#guideline table {
+	display: inline-block;
+	background-color: #373737;
+	border-collapse: collapse;
+}
+
+#guideline table td {
 	border: solid 1px #616161;
 	margin: 0;
 	padding: 0;

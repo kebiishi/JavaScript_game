@@ -6,6 +6,10 @@ const BLOCK_SIZE = 20;
 // ブロック数
 const COL_BLOCK_NUM = 10;
 const ROW_BLOCK_NUM = 20;
+// ガイドラインに表示するブロックの1辺のサイズ[px]
+const GUIDELINE_BLOCK_SIZE = 10;
+// ガイドラインに表示するパーツ数
+const GUIDELINE_PARTS_NUM = 3;
 // 1フレームの時間間隔[ms]
 // const DELAY = 700;
 const DELAY = 200;
@@ -30,6 +34,8 @@ const ROTATION = [0, 90, 180, 270];
 let interval;
 // 盤面上の各セルにブロックがあるかを保持する
 let blocks = [];
+// ガイドラインに表示するパーツ
+let guidelineParts = [];
 // 落下中のパーツ
 let fallingParts;
 
@@ -38,7 +44,10 @@ let fallingParts;
  */
 function init() {
 	"use strict";
+	// 盤面を描画。
 	drawBoard();
+	// ガイドラインを描画。
+	drawGuideline();
 
 	// 盤面上のブロックを初期化する。
 	// 各セルにブロックがあるかどうかは、背景色が透明かそうでないかで判断する。
@@ -76,6 +85,44 @@ function clearBoard() {
 		Array.from(tr.children).forEach(td =>
 			td.style.backgroundColor = "transparent"
 		);
+	});
+}
+
+/**
+ * ガイドラインを描画する。
+ */
+function drawGuideline() {
+	const guideline  = document.getElementById("guideline");
+	Array.from(guideline.children).forEach(c => {
+		c.style.width = GUIDELINE_BLOCK_SIZE * 4 + "px";
+		c.style.height = GUIDELINE_BLOCK_SIZE * 4 + "px";
+	});
+	// 盤面のマス目を作成する。
+	Array.from(guideline.children).forEach(c => {
+		for (let i=0; i < 4; i++) {
+			let tr = document.createElement("tr");
+			for (let j=0; j < 4; j++) {
+				let td = document.createElement("td");
+				td.style.width = GUIDELINE_BLOCK_SIZE + "px";
+				td.style.height = GUIDELINE_BLOCK_SIZE + "px";
+				tr.appendChild(td);
+			}
+			c.appendChild(tr);
+		}
+	});
+}
+
+/**
+ * ガイドラインを初期化（ブロックを非可視に）。
+ */
+function clearGuideline() {
+	const guideline  = document.getElementById("guideline");
+	Array.from(guideline.children).forEach(table => {
+		Array.from(table.children).forEach(tr => {
+			Array.from(tr.children).forEach(td =>
+				td.style.backgroundColor = "transparent"
+			);
+		});
 	});
 }
 
@@ -297,7 +344,8 @@ function createNewParts(def) {
 /**
  * ブロックのあるセルの背景色をセット。
  */
-function paintBGColor() {
+function paintBlocks() {
+	const board = document.getElementById("board");
 	// 落下済みのブロックを描画。
 	// blocks配列には背景色を保持している。
 	blocks.forEach((row, i) => {
@@ -311,6 +359,68 @@ function paintBGColor() {
 			board.children[p.row].children[p.col].style.backgroundColor = fallingParts.color;
 		})
 	}
+}
+
+/**
+ * ガイドラインに数手先までのパーツを描画する。
+ */
+function paintGuideline() {
+	const tables = Array.from(document.getElementById("guideline").children);
+	const position = [
+		// "O-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[1, 0],
+			[1, 1]
+		],
+		// "L-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[0, 2],
+			[1, 0]
+		],
+		// "J-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[0, 2],
+			[1, 2]
+		],
+		// "T-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[0, 2],
+			[1, 1]
+		],
+		// "S-shaped":
+		[
+			[0, 1],
+			[0, 2],
+			[1, 0],
+			[1, 1]
+		],
+		// "Z-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[1, 1],
+			[1, 2]
+		],
+		// "I-shaped":
+		[
+			[0, 0],
+			[0, 1],
+			[0, 2],
+			[0, 3]
+		]
+	];
+	guidelineParts.forEach((p, i) => {
+		position[p.pattern].forEach(c =>
+			tables[i].children[c[0]].children[c[1]].style.backgroundColor = p.color);
+	});
 }
 
 /**
@@ -380,7 +490,7 @@ function canExists(parts) {
 	return true;
 }
 
-/*
+/**
  * ブロックが整列した行を消去する。
  */
 function deleteRow() {
@@ -419,9 +529,18 @@ function draw() {
 	// ブロックが整列した行を消す。
 	deleteRow();
 
-	// ブロックが落下し終わったら新しいブロックを生成。
+	// ガイドラインに表示するパーツを取得。
+	while(guidelineParts.length < GUIDELINE_PARTS_NUM) {
+		guidelineParts.push(createNewParts(selectNewParts()));
+	}
+	// ガイドラインに表示するパーツをクリア。
+	clearGuideline();
+	// ガイドラインを表示。
+	paintGuideline();
+
+	// ブロックが落下し終わったらガイドラインの先頭から新しいパーツを取り出す。
 	if (!fallingParts) {
-		fallingParts = createNewParts(selectNewParts());
+		fallingParts = guidelineParts.shift();
 	}
 
 	// 落下。
@@ -436,7 +555,7 @@ function draw() {
 	}
 
 	// 背景色を塗る。
-	paintBGColor();
+	paintBlocks();
 
 }
 
@@ -497,6 +616,6 @@ document.addEventListener("keydown", e => {
 
 	}
 	// 背景色を塗る。
-	paintBGColor();
+	paintBlocks();
 }, false);
 
